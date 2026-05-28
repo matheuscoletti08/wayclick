@@ -1,3 +1,5 @@
+# Wayclick
+
 ```text
   ▄▄▄                          ▄▄                 
  █▀██  ██  ██▀▀                 ██                
@@ -9,107 +11,107 @@
                     ▀▀▀                           
 ```
 
-# WAYCLICK
+Minimal low-latency auto-clicker for Linux and Wayland.
 
-Minimal, low-latency auto-clicker built for Linux, Wayland and power users.
+Direct Linux input injection using evdev/uinput.
 
-WAYCLICK uses `evdev` + `uinput` to create native virtual mouse events directly through the Linux input subsystem — no X11 hacks, no GUI dependency, no Electron bloat.
+Built with:
+
+* Python
+* evdev
+* uinput
 
 Designed for:
 
-* Wayland
 * KDE Plasma
 * Hyprland
-* tiling WMs
-* low RAM usage
-* ultra-fast click intervals
+* Wayland
+* tiling window managers
+* low overhead
+* fast click timing
 
 ---
 
-# Features
+## Features
 
-* Native Linux input injection (`uinput`)
-* Works on Wayland
-* Extremely lightweight
-* Toggle mode
+* Native Linux input injection
+* Wayland compatible
+* Low latency
+* Lightweight
 * Left/right click support
-* Precise timing loop
-* Single-file architecture
-* Zero GUI frameworks
-* No root required after proper udev setup
-* Minimal terminal interface
+* Toggle mode
+* Minimal terminal UI
+* No GUI frameworks
+* No X11 requirement
 
 ---
 
-# Why WAYCLICK?
+## Installation
 
-Most Linux auto-clickers:
-
-* depend on X11
-* break on Wayland
-* use bloated GUI frameworks
-* rely on unreliable automation APIs
-
-WAYCLICK talks directly to the Linux input layer.
-
-Result:
-
-* lower latency
-* lower overhead
-* Wayland compatibility
-* more reliable behavior
-
----
-
-# Requirements
-
-## System
-
-* Linux
-* Python 3.10+
-* `/dev/uinput` access
-
-## Python dependencies
+Clone the repository:
 
 ```bash
-pip install evdev
+git clone https://github.com/matheuscoletti08/Wayclick.git
+cd Wayclick
+```
+
+Create virtual environment:
+
+```bash
+python -m venv .venv
+```
+
+Activate venv:
+
+### Bash/Zsh
+
+```bash
+source .venv/bin/activate
+```
+
+### Fish
+
+```fish
+source .venv/bin/activate.fish
+```
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
 ```
 
 ---
 
-# UInput Setup (Required)
+## UInput Setup
 
-To run WAYCLICK without `sudo`, configure `uinput` permissions.
+Wayclick requires access to `/dev/uinput`.
 
-## 1. Create udev rule
+Create udev rule:
 
 ```bash
 echo 'KERNEL=="uinput", GROUP="uinput", MODE="0660", OPTIONS+="static_node=uinput"' | sudo tee /etc/udev/rules.d/99-uinput.rules
 ```
 
-## 2. Create group and add your user
+Create group and add your user:
 
 ```bash
 sudo groupadd uinput
 sudo usermod -aG uinput $USER
 ```
 
-## 3. Reload udev rules
+Reload rules:
 
 ```bash
 sudo udevadm control --reload-rules
 sudo udevadm trigger
 ```
 
-Then:
-
-* logout/login
-  or
-* reboot
+Then reboot or relog.
 
 ---
 
-# Usage
+## Usage
 
 Run:
 
@@ -129,106 +131,68 @@ CPS (default 20): 100
 button (left/right): left
 ```
 
-After startup:
+Controls:
 
-* Press ENTER to toggle clicking
-* Press CTRL+C to exit
-
----
-
-# Performance
-
-Typical RAM usage:
-
-* ~8MB to ~25MB
-  (depending on Python runtime and distro)
-
-CPU usage:
-
-* extremely low at normal CPS
-* scales with click interval precision
-
-WAYCLICK uses:
-
-* threaded timing loop
-* monotonic high-resolution timers
-* direct event injection
-
-No polling-heavy GUI frameworks are used.
+```text
+ENTER   -> toggle clicking
+CTRL+C  -> exit
+```
 
 ---
 
-# Technical Details
+## Requirements
 
-WAYCLICK creates a virtual mouse device using Linux `uinput`.
+System:
 
-Clicks are emitted through:
+* Linux
+* Python 3.10+
+* uinput access
 
-* `EV_KEY`
-* `BTN_LEFT`
-* `BTN_RIGHT`
+Python:
 
-Timing uses:
-
-* `time.perf_counter()`
-* drift correction loop
-
-This avoids the timing instability common in naive `sleep()` implementations.
+* evdev
 
 ---
 
-# Compatibility
+## Performance
 
-## Tested
+Typical memory usage:
 
+* ~8MB to ~25MB RAM
+
+Designed to remain lightweight even at high CPS values.
+
+---
+
+## Compatibility
+
+Tested on:
+
+* CachyOS
 * KDE Plasma Wayland
-* Arch Linux
 
-## Expected to work
+Expected to work on:
 
 * Hyprland
-* Sway
 * GNOME Wayland
-* X11 environments
+* Sway
+* X11
 
 ---
 
-# Philosophy
-
-WAYCLICK is intentionally:
-
-* minimal
-* transparent
-* hackable
-* dependency-light
-
-No telemetry.
-No background services.
-No unnecessary UI.
-
-Just clicks.
-
----
-
-# Roadmap
+## Roadmap
 
 Planned:
 
 * configurable hotkeys
-* JSON config
+* config.json support
 * packaged releases
 * AUR package
-* daemon mode
-* multiple click profiles
 * live CPS switching
-* Rust rewrite experiment
+* daemon mode
 
 ---
 
-# Disclaimer
+## License
 
-Use responsibly.
-
-Some games and anti-cheat systems may detect synthetic input devices generated through `uinput`.
-
-WAYCLICK is intended for automation, accessibility, testing and personal workflow usage.
+MIT License
