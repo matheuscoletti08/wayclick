@@ -1,76 +1,234 @@
-# AutoClicker
+```text
+  ▄▄▄                          ▄▄                 
+ █▀██  ██  ██▀▀                 ██                
+   ██  ██  ██                   ██ ▀▀       ▄▄    
+   ██  ██  ██ ▄▀▀█▄ ██ ██ ▄███▀ ██ ██ ▄███▀ ██ ▄█▀
+   ██▄ ██▄ ██ ▄█▀██ ██▄██ ██    ██ ██ ██    ████  
+   ▀████▀███▀▄▀█▄██▄▄▀██▀▄▀███▄▄██▄██▄▀███▄▄██ ▀█▄
+                      ██                          
+                    ▀▀▀                           
+```
 
-Um auto-clicker simples para Linux utilizando a biblioteca `evdev` e `uinput`.
+# WAYCLICK
 
-## Dependências
+Minimal, low-latency auto-clicker built for Linux, Wayland and power users.
 
-### Sistema
-- Linux
-- Acesso ao `/dev/uinput` (geralmente requer permissões de grupo `uinput` ou `root`).
-- Python 3.x
+WAYCLICK uses `evdev` + `uinput` to create native virtual mouse events directly through the Linux input subsystem — no X11 hacks, no GUI dependency, no Electron bloat.
 
-### Python
-As dependências Python podem ser instaladas via `pip`:
+Designed for:
+
+* Wayland
+* KDE Plasma
+* Hyprland
+* tiling WMs
+* low RAM usage
+* ultra-fast click intervals
+
+---
+
+# Features
+
+* Native Linux input injection (`uinput`)
+* Works on Wayland
+* Extremely lightweight
+* Toggle mode
+* Left/right click support
+* Precise timing loop
+* Single-file architecture
+* Zero GUI frameworks
+* No root required after proper udev setup
+* Minimal terminal interface
+
+---
+
+# Why WAYCLICK?
+
+Most Linux auto-clickers:
+
+* depend on X11
+* break on Wayland
+* use bloated GUI frameworks
+* rely on unreliable automation APIs
+
+WAYCLICK talks directly to the Linux input layer.
+
+Result:
+
+* lower latency
+* lower overhead
+* Wayland compatibility
+* more reliable behavior
+
+---
+
+# Requirements
+
+## System
+
+* Linux
+* Python 3.10+
+* `/dev/uinput` access
+
+## Python dependencies
 
 ```bash
 pip install evdev
 ```
 
-## Configuração de Permissões (UInput)
+---
 
-Para executar o script sem `sudo`, seu usuário precisa de permissões para acessar o `/dev/uinput`.
+# UInput Setup (Required)
 
-1. Crie uma regra udev:
-   ```bash
-   echo 'KERNEL=="uinput", GROUP="uinput", MODE="0660", OPTIONS+="static_node=uinput"' | sudo tee /etc/udev/rules.d/99-uinput.rules
-   ```
-2. Crie o grupo `uinput` (se não existir) e adicione seu usuário:
-   ```bash
-   sudo groupadd uinput
-   sudo usermod -aG uinput $USER
-   ```
-3. Recarregue as regras ou reinicie:
-   ```bash
-   sudo udevadm control --reload-rules && sudo udevadm trigger
-   ```
-   *Nota: Pode ser necessário fazer logout e login novamente para as alterações de grupo surtirem efeito.*
+To run WAYCLICK without `sudo`, configure `uinput` permissions.
 
-## Como Usar
-
-Execute o script `start.py`:
+## 1. Create udev rule
 
 ```bash
-python start.py [opções]
+echo 'KERNEL=="uinput", GROUP="uinput", MODE="0660", OPTIONS+="static_node=uinput"' | sudo tee /etc/udev/rules.d/99-uinput.rules
 ```
 
-### Opções
-- `--ms`: Intervalo entre cliques em milissegundos (padrão: `50`).
-- `--button`: Botão para clicar (`left` ou `right`, padrão: `left`).
-- `--mode`: Modo de operação (`hold` ou `toggle`, padrão: `hold`).
+## 2. Create group and add your user
 
-### Exemplos
+```bash
+sudo groupadd uinput
+sudo usermod -aG uinput $USER
+```
 
-1. **Clique esquerdo a cada 100ms no modo toggle:**
-   ```bash
-   python start.py --ms 100 --mode toggle
-   ```
-   *Pressione ENTER no terminal para ligar/desligar.*
+## 3. Reload udev rules
 
-2. **Clique direito rápido (10ms) no modo hold:**
-   ```bash
-   python start.py --ms 10 --button right --mode hold
-   ```
-   *Pressione ENTER no terminal para simular o segurar do botão.*
+```bash
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+```
 
-## Tecla de Ação
+Then:
 
-Atualmente, o script utiliza a tecla **ENTER** dentro do terminal onde está sendo executado para controlar o estado do clique:
+* logout/login
+  or
+* reboot
 
-- **Modo Toggle:** Pressione ENTER uma vez para ligar e ENTER novamente para desligar.
-- **Modo Hold:** Pressione ENTER para alternar entre "segurar" e "soltar" o clique virtual.
+---
 
-### Nota sobre Teclas de Atalho (Hotkeys)
-A versão atual não captura teclas globais do sistema (ex: F1, F6). Se você desejar mudar o comportamento para responder a uma tecla específica do teclado em vez do ENTER no terminal, seria necessário integrar uma biblioteca como `pynput` ou ler eventos diretamente de `/dev/input/`.
+# Usage
 
-## Funcionamento
-O script cria um dispositivo de entrada virtual chamado "auto-clicker" via `uinput`. Ele utiliza uma thread separada para gerenciar o loop de cliques, garantindo precisão no timing.
+Run:
+
+```bash
+python wayclick.py
+```
+
+The application will ask for:
+
+* CPS
+* mouse button
+
+Example:
+
+```text
+CPS (default 20): 100
+button (left/right): left
+```
+
+After startup:
+
+* Press ENTER to toggle clicking
+* Press CTRL+C to exit
+
+---
+
+# Performance
+
+Typical RAM usage:
+
+* ~8MB to ~25MB
+  (depending on Python runtime and distro)
+
+CPU usage:
+
+* extremely low at normal CPS
+* scales with click interval precision
+
+WAYCLICK uses:
+
+* threaded timing loop
+* monotonic high-resolution timers
+* direct event injection
+
+No polling-heavy GUI frameworks are used.
+
+---
+
+# Technical Details
+
+WAYCLICK creates a virtual mouse device using Linux `uinput`.
+
+Clicks are emitted through:
+
+* `EV_KEY`
+* `BTN_LEFT`
+* `BTN_RIGHT`
+
+Timing uses:
+
+* `time.perf_counter()`
+* drift correction loop
+
+This avoids the timing instability common in naive `sleep()` implementations.
+
+---
+
+# Compatibility
+
+## Tested
+
+* KDE Plasma Wayland
+* Arch Linux
+
+## Expected to work
+
+* Hyprland
+* Sway
+* GNOME Wayland
+* X11 environments
+
+---
+
+# Philosophy
+
+WAYCLICK is intentionally:
+
+* minimal
+* transparent
+* hackable
+* dependency-light
+
+No telemetry.
+No background services.
+No unnecessary UI.
+
+Just clicks.
+
+---
+
+# Roadmap
+
+Planned:
+
+* configurable hotkeys
+* JSON config
+* packaged releases
+* AUR package
+* daemon mode
+* multiple click profiles
+* live CPS switching
+* Rust rewrite experiment
+
+---
+
+# Disclaimer
+
+Use responsibly.
+
+Some games and anti-cheat systems may detect synthetic input devices generated through `uinput`.
+
+WAYCLICK is intended for automation, accessibility, testing and personal workflow usage.
