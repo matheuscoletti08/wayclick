@@ -58,8 +58,8 @@ class AutoClicker:
     def toggle(self):
         self.active = not self.active
         print(f"[AUTOCLICKER] {'ON' if self.active else 'OFF'}")
-
-
+    
+        
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
